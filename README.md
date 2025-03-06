@@ -1,92 +1,95 @@
 
-# Instagram 评论及用户简介爬虫
+# Instagram Comment & Profile Scraper
 
-本项目包含两个 Python 脚本，用于采集 Instagram 指定标签下帖子的评论者用户名，并进一步获取这些用户的主页简介和联系信息（如电话号码、Email、链接等）。
+This project consists of two Python scripts that work together to scrape data from Instagram. The first script, `comment.py`, collects Instagram post URLs from a specified hashtag and extracts the usernames of users who commented on those posts, saving them to a CSV file (`comments.csv`). The second script, `phone2.py` (or `bio.py`), reads the usernames from `comments.csv`, retrieves each user’s profile information from Instagram (including biography), and then extracts contact details (phone number, email, and links) from the biography. The final output is saved into `profiles_phone.csv`.
 
-## 文件说明
+## Files Description
 
 - **comment.py**  
-  - **功能**：  
-    1. 使用 Selenium 打开指定标签（例如“保健品”）的 Instagram 页面，滚动加载并提取帖子的基础链接。  
-    2. 通过 Instagram GraphQL 接口获取每个帖子的详细数据（包括评论信息）。  
-    3. 从每个帖子的 JSON 数据中提取评论者的用户名，并将结果保存到 `comments.csv` 文件中。  
-  - **运行要求**：  
-    - Python 3.x  
-    - Selenium  
-    - httpx  
-    - Chrome 浏览器及对应版本的 ChromeDriver  
-    - 修改代码中的 `user-data-dir` 和 `--profile-directory` 参数（根据你本地 Chrome 的用户数据路径）  
-    - 在首次运行时，如果页面出现登录提示，需要手动登录后按回车继续。
+  **Functionality**:  
+  - Opens Instagram’s hashtag page (e.g., for “保健品” or any other hashtag you specify) using Selenium.  
+  - Scrolls down to load more posts and extracts each post’s basic URL (only the main post URL, excluding “liked_by” or “comments” URL variants).  
+  - For each post, calls Instagram’s GraphQL API (using a fixed query hash) via httpx to fetch detailed post data (including comment information).  
+  - Extracts the usernames from the comments and saves them as pairs of (post URL, comment username) in `comments.csv`.  
 
-- **phone2.py**（或你自己的文件名，例如 bio.py）  
-  - **功能**：  
-    1. 从上一步生成的 `comments.csv` 文件中读取评论中提到的用户名。  
-    2. 使用 httpx 调用 Instagram 用户信息接口获取每个用户的详细信息（包括主页简介 biography）。  
-    3. 从简介中提取联系信息：电话号码、Email 和链接。  
-    4. 将最终结果保存到 `profiles_phone.csv` 文件中。  
-  - **运行要求**：  
-    - Python 3.x  
-    - httpx  
-    - 正则表达式模块（Python 标准库中自带）  
-    - 如需保持登录状态，请在代码中配置有效的 Cookie 信息（修改 `cookies` 字典中的内容）；如果不配置，则接口将以匿名状态请求，可能返回错误信息或受限数据。
+  **Requirements**:  
+  - Python 3.x  
+  - Selenium  
+  - httpx  
+  - Chrome browser and the corresponding ChromeDriver  
+  - You must modify the code’s `user-data-dir` and `--profile-directory` parameters to match your own Chrome profile path.  
+  - On the first run, if the browser navigates to a login page, you need to log in manually and then press Enter in the terminal to continue.
 
-## 安装依赖
+- **phone2.py** (or similarly named, e.g., bio.py)  
+  **Functionality**:  
+  - Reads the usernames collected in `comments.csv`.  
+  - For each username, uses httpx to call Instagram’s user profile API endpoint (`https://i.instagram.com/api/v1/users/web_profile_info/?username={username}`) to retrieve profile data (which includes the biography).  
+  - Uses regular expressions to extract contact details from the biography: phone number, email, and any links.  
+  - Saves the final results (username, biography, phone number, email, and link) to `profiles_phone.csv`.
 
-请确保你已经安装以下依赖库：
+  **Requirements**:  
+  - Python 3.x  
+  - httpx  
+  - The standard Python libraries (csv, re, json, time, random, urllib)  
+  - If you want to maintain a logged-in state, update the `cookies` dictionary in the code with valid login cookies; otherwise, the API might return errors or limited data.
+
+## Installation
+
+Before running the scripts, install the required Python packages:
 
 ```bash
 pip install selenium httpx
 ```
 
-另外，请下载与你的 Chrome 版本相匹配的 ChromeDriver，并确保它在系统 PATH 中，或在代码中指定正确路径。
+Also, download the ChromeDriver that matches your local Chrome version and ensure it is in your system PATH or specify its path in the code if necessary.
 
-## 使用说明
+## How to Use
 
-### 1. 获取评论者用户名
+### 1. Run `comment.py` to Collect Comment Usernames
 
-首先运行 `comment.py` 脚本，该脚本会：
-- 打开指定标签（在代码中可修改变量 `hashtag`）的 Instagram 页面。
-- 滚动加载并提取帖子的基础链接。
-- 对每个帖子调用 Instagram GraphQL 接口，提取评论中的用户名，并保存到 `comments.csv` 文件中。
+This script will:
+- Open the specified hashtag page on Instagram.
+- Scroll down to load more posts.
+- Extract basic post URLs.
+- For each post, fetch detailed post data via the GraphQL API.
+- Extract the usernames of users who commented.
+- Save the collected data to `comments.csv`.
 
-运行方法：
+**Run the script:**
 
 ```bash
 python3 comment.py
 ```
 
-注意：
-- 如果第一次运行时出现登录页面，请在弹出的浏览器中手动登录 Instagram，然后回到终端按回车继续。
-- 根据需要修改代码中 `user-data-dir` 和 `--profile-directory` 参数为你自己的 Chrome 用户数据路径及对应的 Profile 文件夹名称。
+**Notes:**
+- If you encounter a login page, log in manually using the opened browser window and then press Enter in the terminal to continue.
+- Modify the `user-data-dir` and `--profile-directory` parameters in the code to match your local Chrome profile settings.
 
-### 2. 获取用户简介和联系信息
+### 2. Run `phone2.py` to Extract Profile Contact Details
 
-运行 `phone2.py`，该脚本会：
-- 从 `comments.csv` 中读取评论中提到的用户名（确保文件与脚本在同一目录）。
-- 对每个用户名调用 Instagram 用户信息接口获取主页数据。
-- 使用正则表达式从主页简介中提取电话号码、Email 以及链接。
-- 最终将这些信息保存到 `profiles_phone.csv` 文件中。
+This script will:
+- Read the usernames from `comments.csv`.
+- For each username, call the Instagram user profile API to retrieve profile information.
+- Use regular expressions to extract the phone number, email, and link from the user's biography.
+- Save the final profile information to `profiles_phone.csv`.
 
-运行方法：
+**Run the script:**
 
 ```bash
 python3 phone2.py
 ```
 
-注意：
-- 如需保持登录状态，请在代码中修改 `cookies` 字典（例如添加有效的 `sessionid` 等 Cookie 信息）；如果不使用 Cookie，则请求可能返回错误或受限信息。
-- 请求之间有随机延时，防止请求过快导致被限流。
+**Notes:**
+- To maintain a logged-in state, you should update the `cookies` dictionary in the script with valid cookie values (such as `sessionid`, `csrftoken`, etc.). Without valid cookies, the API may return an error or limited data.
+- The scripts incorporate random delays between requests to help avoid being rate-limited by Instagram.
 
-## 注意事项
+## Additional Notes
 
-- **登录状态**：  
-  建议在 Selenium 中使用你自己的 Chrome 用户数据（`user-data-dir` 和 `--profile-directory`）以保持登录状态。如果运行时出现登录提示，请手动登录后再继续。
+- **Login State & Cookies**:  
+  Ensure you use a Chrome profile that is logged in to Instagram. You can obtain your login cookies via Selenium or manually copy them from your browser's developer tools.
 
-- **请求频率**：  
-  Instagram 对请求频率有较严格的限制。如果出现限流提示（例如 "Please wait a few minutes before you try again."），建议延长等待时间或者分批处理请求。
+- **Rate Limiting**:  
+  Instagram has strict rate limits. If you receive messages such as “Please wait a few minutes before you try again,” you may need to increase the delay between requests or use proxies to distribute the requests.
 
-- **Cookie 配置**：  
-  若你需要接口返回更多数据（例如用户简介、联系方式），请确保在 `phone2.py` 中配置有效的登录状态 Cookie。你可以通过 Selenium 获取后传入，或手动复制粘贴。
-
-- **ChromeDriver 版本**：  
-  请确保下载与你本地 Chrome 浏览器版本匹配的 ChromeDriver。
+- **Customization**:  
+  Feel free to adjust the regular expressions used to extract phone numbers, emails, and links based on the actual format you observe in user biographies.
