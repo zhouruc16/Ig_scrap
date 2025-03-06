@@ -4,7 +4,7 @@
 This project consists of two Python scripts that work together to scrape data from Instagram. The first script, `comment.py`, collects Instagram post URLs from a specified hashtag and extracts the usernames of users who commented on those posts, saving them to a CSV file (`comments.csv`). The second script, `phone2.py` (or `bio.py`), reads the usernames from `comments.csv`, retrieves each user’s profile information from Instagram (including biography), and then extracts contact details (phone number, email, and links) from the biography. The final output is saved into `profiles_phone.csv`.
 
 ## Files Description
-
+** code with English comments is in _eng file
 - **comment.py**  
   **Functionality**:  
   - Opens Instagram’s hashtag page (e.g., for “保健品” or any other hashtag you specify) using Selenium.  
